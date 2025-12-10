@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>WorkApp – Driver & Admin Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --bg-alt: #ffffff;
+      --border: #d1d5db;
+      --accent: #2563eb;
+      --accent-soft: rgba(37, 99, 235, 0.08);
+      --accent-strong: #1d4ed8;
+      --text: #111827;
+      --muted: #6b7280;
+      --danger: #ef4444;
+      --success: #16a34a;
+      --radius: 10px;
+      --shadow: 0 10px 25px rgba(15, 23, 42, 0.12);
+      --font: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: var(--font);
+      background: radial-gradient(circle at top left, #dbeafe 0, #f9fafb 45%);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    .app-shell {
+      width: 100%;
+      max-width: 1100px;
+      background: var(--bg-alt);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      padding: 20px 20px 24px;
+    }
+    .app-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .app-title {
+      font-size: 1.3rem;
+      font-weight: 600;
+    }
+    .app-subtitle {
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent-strong);
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+    .pill-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: var(--accent);
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 320px) minmax(0, 1fr);
+      gap: 18px;
+    }
+    @media (max-width: 900px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: #ffffff;
+      border-radius: var(--radius);
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      padding: 14px 14px 16px;
+    }
+    .card h2 {
+      margin: 0 0 8px;
+      font-size: 1rem;
+    }
+    .card p {
+      margin: 0 0 10px;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    .field-group {
+      margin-bottom: 8px;
+      font-size: 0.8rem;
+    }
+    .field-group label {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--muted);
+    }
+    .field-group input,
+    .field-group select {
+      width: 100%;
+      padding: 7px 9px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      font-size: 0.85rem;
+      outline: none;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+      background: #f9fafb;
+    }
+    .field-group input:focus,
+    .field-group select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.2);
+      background: #ffffff;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 7px 13px;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+      white-space: nowrap;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+      color: #ffffff;
+      box-shadow: 0 6px 14px rgba(37, 99, 235, 0.35);
+      border-color: rgba(37, 99, 235, 0.9);
+    }
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 18px rgba(37, 99, 235, 0.45);
+    }
+    .btn-ghost {
+      background: transparent;
+      border-color: var(--border);
+      color: var(--muted);
+    }
+    .btn-ghost:hover {
+      border-color: var(--accent);
+      color: var(--accent-strong);
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+    }
+    .btn-danger {
+      background: #fee2e2;
+      border-color: #fecaca;
+      color: var(--danger);
+    }
+    .btn-danger:hover {
+      background: #fecaca;
+    }
+
+    .auth-toggle {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .auth-error {
+      min-height: 16px;
+      font-size: 0.78rem;
+      color: var(--danger);
+      margin-bottom: 6px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      border: 1px solid rgba(148,163,184,0.6);
+      color: var(--muted);
+      background: #f9fafb;
+    }
+    .badge-admin {
+      border-color: rgba(37, 99, 235, 0.6);
+      color: var(--accent-strong);
+      background: var(--accent-soft);
+    }
+
+    .dashboard-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      gap: 8px;
+    }
+    .dashboard-header-left {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .stats-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .stat-chip {
+      flex: 1 1 120px;
+      min-width: 120px;
+      padding: 6px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(148,163,184,0.5);
+      font-size: 0.75rem;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+    }
+    .stat-chip strong {
+      font-size: 0.85rem;
+      color: var(--text);
+    }
+
+    .runs-table-wrapper {
+      border-radius: var(--radius);
+      border: 1px solid rgba(148,163,184,0.5);
+      overflow: hidden;
+      background: #f9fafb;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.8rem;
+    }
+    thead {
+      background: #e5e7eb;
+    }
+    th, td {
+      padding: 6px 6px;
+      border-bottom: 1px solid rgba(148,163,184,0.5);
+      text-align: center;
+      white-space: nowrap;
+    }
+    tbody tr:nth-child(even) {
+      background: #f3f4f6;
+    }
+    tbody tr:hover {
+      background: #e0f2fe;
+    }
+    td input, td select {
+      width: 100%;
+      border-radius: 6px;
+      border: 1px solid rgba(148,163,184,0.7);
+      padding: 4px 5px;
+      font-size: 0.78rem;
+      outline: none;
+      background: #f9fafb;
+    }
+    td input:disabled {
+      background: #e5e7eb;
+      color: var(--muted);
+    }
+    .small-checkbox {
+      width: 16px;
+      height: 16px;
+    }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+<div class="app-shell">
+  <div class="app-header">
+    <div>
+      <div class="app-title">WorkApp – Load Management</div>
+      <div class="app-subtitle">Drivers see only their runs · Admins manage all runs</div>
+    </div>
+    <div>
+      <span class="pill">
+        <span class="pill-dot"></span>
+        <span id="statusPillText">Not signed in</span>
+      </span>
+    </div>
+  </div>
+
+  <div class="layout">
+    <!-- LEFT: AUTH PANEL -->
+    <div class="card" id="authCard">
+      <h2>Sign in / Register</h2>
+      <p>Drivers register once, admins sign in with their admin email.</p>
+
+      <div class="auth-toggle">
+        <button id="showLoginBtn" class="btn btn-primary">Login</button>
+        <button id="showRegisterBtn" class="btn btn-ghost">Register (Driver)</button>
+      </div>
+
+      <div id="authError" class="auth-error"></div>
+
+      <!-- LOGIN FORM -->
+      <form id="loginForm">
+        <div class="field-group">
+          <label for="loginEmail">Email</label>
+          <input type="email" id="loginEmail" required />
+        </div>
+        <div class="field-group">
+          <label for="loginPassword">Password</label>
+          <input type="password" id="loginPassword" required />
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%; margin-top:8px;">Login</button>
+      </form>
+
+      <!-- REGISTER FORM -->
+      <form id="registerForm" class="hidden">
+        <div class="field-group">
+          <label for="regName">Full Name</label>
+          <input type="text" id="regName" required />
+        </div>
+        <div class="field-group">
+          <label for="regEmail">Email</label>
+          <input type="email" id="regEmail" required />
+        </div>
+        <div class="field-group">
+          <label for="regPassword">Password (min 6 chars)</label>
+          <input type="password" id="regPassword" minlength="6" required />
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%; margin-top:8px;">Register driver</button>
+      </form>
+    </div>
+
+    <!-- RIGHT: DASHBOARDS -->
+    <div class="card">
+      <!-- Top bar: role & logout -->
+      <div class="dashboard-header">
+        <div class="dashboard-header-left">
+          <div id="currentUserInfo" class="badge hidden"></div>
+          <div id="currentRoleBadge" class="badge badge-admin hidden"></div>
+        </div>
+        <div>
+          <button id="logoutBtn" class="btn btn-ghost hidden">Logout</button>
+        </div>
+      </div>
+
+      <!-- DRIVER DASHBOARD -->
+      <div id="driverDashboard" class="hidden">
+        <h2>Driver runs</h2>
+        <p>Your personal runs only. You cannot edit or delete runs.</p>
+
+        <div class="stats-row">
+          <div class="stat-chip"><span>Total runs</span><strong id="driverStatTotal">0</strong></div>
+          <div class="stat-chip"><span>RTL</span><strong id="driverStatRTL">0</strong></div>
+        </div>
+
+        <div class="runs-table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Load #</th>
+                <th>Wave</th>
+                <th>Due In</th>
+                <th>Ready</th>
+                <th>Due Out</th>
+                <th>RTL</th>
+              </tr>
+            </thead>
+            <tbody id="driverRunsBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ADMIN DASHBOARD -->
+      <div id="adminDashboard" class="hidden">
+        <h2>Admin – All runs</h2>
+        <p>Create, assign, edit, and delete runs for any driver.</p>
+
+        <!-- create run -->
+        <div class="card" style="margin-bottom:12px; padding:10px;">
+          <h3 style="margin:0 0 6px; font-size:0.95rem;">Create / assign run</h3>
+          <div class="field-group">
+            <label for="adminDriverSelect">Driver</label>
+            <select id="adminDriverSelect"></select>
+          </div>
+          <div class="field-group">
+            <label for="adminLoadNumber">Load number</label>
+            <input type="text" id="adminLoadNumber" />
+          </div>
+          <div class="field-group">
+            <label for="adminWave">Wave #</label>
+            <input type="number" id="adminWave" />
+          </div>
+          <div class="field-group">
+            <label for="adminDueIn">Due In time</label>
+            <input type="time" id="adminDueIn" />
+          </div>
+          <div class="field-group">
+            <label for="adminReadyTime">Ready-to-load time</label>
+            <input type="time" id="adminReadyTime" />
+          </div>
+          <div class="field-group">
+            <label for="adminDueOut">Due Out time</label>
+            <input type="time" id="adminDueOut" />
+          </div>
+          <div class="field-group">
+            <label>
+              <input type="checkbox" id="adminRtl" class="small-checkbox" />
+              Ready to load (RTL)
+            </label>
+          </div>
+          <button id="createRunBtn" class="btn btn-primary" style="margin-top:4px;">Create run</button>
+        </div>
+
+        <!-- stats -->
+        <div class="stats-row">
+          <div class="stat-chip"><span>Total runs</span><strong id="adminStatTotal">0</strong></div>
+          <div class="stat-chip"><span>RTL</span><strong id="adminStatRTL">0</strong></div>
+        </div>
+
+        <!-- runs table -->
+        <div class="runs-table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Driver</th>
+                <th>Load #</th>
+                <th>Wave</th>
+                <th>Due In</th>
+                <th>Ready</th>
+                <th>Due Out</th>
+                <th>RTL</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="adminRunsBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<script>
+  // 1) YOUR FIREBASE CONFIG: REPLACE WITH REAL VALUES FROM FIREBASE CONSOLE
+  const firebaseConfig = {
+  apiKey: "AIzaSyCZTNb5nYUjj_gdZENk7IhU1EIBXN1RvAo",
+  authDomain: "workapp-68fb3.firebaseapp.com",
+  projectId: "workapp-68fb3",
+  storageBucket: "workapp-68fb3.firebasestorage.app",
+  messagingSenderId: "526917775392",
+  appId: "1:526917775392:web:1966e4c04c2d5d52324c45"
+};
+
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.database();
+
+  // references
+  const usersRef = db.ref("users");
+  const runsRef = db.ref("runs");
+
+  // UI elements
+  const statusPillText = document.getElementById("statusPillText");
+  const authCard = document.getElementById("authCard");
+  const authError = document.getElementById("authError");
+  const showLoginBtn = document.getElementById("showLoginBtn");
+  const showRegisterBtn = document.getElementById("showRegisterBtn");
+  const loginForm = document.getElementById("loginForm");
+  const registerForm = document.getElementById("registerForm");
+  const logoutBtn = document.getElementById("logoutBtn");
+
+  const currentUserInfo = document.getElementById("currentUserInfo");
+  const currentRoleBadge = document.getElementById("currentRoleBadge");
+
+  const driverDashboard = document.getElementById("driverDashboard");
+  const driverRunsBody = document.getElementById("driverRunsBody");
+  const driverStatTotal = document.getElementById("driverStatTotal");
+  const driverStatRTL = document.getElementById("driverStatRTL");
+
+  const adminDashboard = document.getElementById("adminDashboard");
+  const adminRunsBody = document.getElementById("adminRunsBody");
+  const adminStatTotal = document.getElementById("adminStatTotal");
+  const adminStatRTL = document.getElementById("adminStatRTL");
+  const adminDriverSelect = document.getElementById("adminDriverSelect");
+
+  const adminLoadNumber = document.getElementById("adminLoadNumber");
+  const adminWave = document.getElementById("adminWave");
+  const adminDueIn = document.getElementById("adminDueIn");
+  const adminReadyTime = document.getElementById("adminReadyTime");
+  const adminDueOut = document.getElementById("adminDueOut");
+  const adminRtl = document.getElementById("adminRtl");
+  const createRunBtn = document.getElementById("createRunBtn");
+
+  let currentUser = null;
+  let currentRole = null;
+  let driverRunsListener = null;
+  let adminRunsListener = null;
+  let driversListListener = null;
+
+  // small helpers
+  const hide = el => el.classList.add("hidden");
+  const show = el => el.classList.remove("hidden");
+
+  function setAuthError(msg) {
+    authError.textContent = msg || "";
+  }
+
+  // toggle login/register UI
+  showLoginBtn.addEventListener("click", () => {
+    showLoginBtn.classList.add("btn-primary");
+    showLoginBtn.classList.remove("btn-ghost");
+    showRegisterBtn.classList.remove("btn-primary");
+    showRegisterBtn.classList.add("btn-ghost");
+    show(loginForm);
+    hide(registerForm);
+    setAuthError("");
+  });
+
+  showRegisterBtn.addEventListener("click", () => {
+    showRegisterBtn.classList.add("btn-primary");
+    showRegisterBtn.classList.remove("btn-ghost");
+    showLoginBtn.classList.remove("btn-primary");
+    showLoginBtn.classList.add("btn-ghost");
+    hide(loginForm);
+    show(registerForm);
+    setAuthError("");
+  });
+
+  // register driver
+  registerForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    setAuthError("");
+    const name = document.getElementById("regName").value.trim();
+    const email = document.getElementById("regEmail").value.trim();
+    const password = document.getElementById("regPassword").value.trim();
+
+    if (!name || !email || password.length < 6) {
+      setAuthError("Please fill all fields. Password must be at least 6 characters.");
+      return;
+    }
+
+    try {
+      const cred = await auth.createUserWithEmailAndPassword(email, password);
+      await cred.user.updateProfile({ displayName: name });
+
+      // save user profile in DB with role "driver"
+      await usersRef.child(cred.user.uid).set({
+        displayName: name,
+        email: email,
+        role: "driver"
+      });
+
+      setAuthError("Driver registered. You can now log in.");
+      registerForm.reset();
+      showLoginBtn.click();
+    } catch (err) {
+      console.error(err);
+      setAuthError(err.message);
+    }
+  });
+
+  // login
+  loginForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    setAuthError("");
+    const email = document.getElementById("loginEmail").value.trim();
+    const password = document.getElementById("loginPassword").value.trim();
+    try {
+      await auth.signInWithEmailAndPassword(email, password);
+      loginForm.reset();
+    } catch (err) {
+      console.error(err);
+      setAuthError(err.message);
+    }
+  });
+
+  // logout
+  logoutBtn.addEventListener("click", async () => {
+    await auth.signOut();
+  });
+
+  // subscribe to Auth state
+  auth.onAuthStateChanged(async (user) => {
+    currentUser = user;
+    currentRole = null;
+
+    // clear listeners
+    if (driverRunsListener) {
+      runsRef.off("value", driverRunsListener);
+      driverRunsListener = null;
+    }
+    if (adminRunsListener) {
+      runsRef.off("value", adminRunsListener);
+      adminRunsListener = null;
+    }
+    if (driversListListener) {
+      usersRef.off("value", driversListListener);
+      driversListListener = null;
+    }
+
+    if (!user) {
+      statusPillText.textContent = "Not signed in";
+      show(authCard);
+      hide(driverDashboard);
+      hide(adminDashboard);
+      hide(currentUserInfo);
+      hide(currentRoleBadge);
+      hide(logoutBtn);
+      driverRunsBody.innerHTML = "";
+      adminRunsBody.innerHTML = "";
+      return;
+    }
+
+    // signed in
+    show(logoutBtn);
+    statusPillText.textContent = "Signed in";
+
+    // load role from DB
+    const snap = await usersRef.child(user.uid).get();
+    if (!snap.exists()) {
+      // if no profile, default them to driver with email as name
+      await usersRef.child(user.uid).set({
+        displayName: user.displayName || user.email,
+        email: user.email,
+        role: "driver"
+      });
+      currentRole = "driver";
+    } else {
+      const data = snap.val();
+      currentRole = data.role || "driver";
+    }
+
+    // update top badges
+    currentUserInfo.textContent = user.displayName
+      ? user.displayName + " (" + user.email + ")"
+      : user.email;
+    show(currentUserInfo);
+
+    if (currentRole === "admin") {
+      currentRoleBadge.textContent = "Admin";
+      show(currentRoleBadge);
+      hide(authCard);
+      show(adminDashboard);
+      hide(driverDashboard);
+      subscribeAdmin();
+    } else {
+      currentRoleBadge.textContent = "Driver";
+      show(currentRoleBadge);
+      hide(authCard);
+      show(driverDashboard);
+      hide(adminDashboard);
+      subscribeDriver(user.uid);
+    }
+  });
+
+  // driver subscription: only their runs
+  function subscribeDriver(uid) {
+    // query by driverId
+    const query = runsRef.orderByChild("driverId").equalTo(uid);
+    driverRunsListener = query.on("value", (snap) => {
+      const rows = snap.val() || {};
+      renderDriverRuns(rows);
+    });
+  }
+
+  function renderDriverRuns(rows) {
+    driverRunsBody.innerHTML = "";
+    const keys = Object.keys(rows);
+    let rtlCount = 0;
+
+    keys.forEach((id) => {
+      const r = rows[id];
+      if (r.rtl) rtlCount++;
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${r.loadNumber || ""}</td>
+        <td>${r.wave || ""}</td>
+        <td>${r.dueIn || ""}</td>
+        <td>${r.readyTime || ""}</td>
+        <td>${r.dueOut || ""}</td>
+        <td>${r.rtl ? "Yes" : "No"}</td>
+      `;
+      driverRunsBody.appendChild(tr);
+    });
+
+    driverStatTotal.textContent = keys.length.toString();
+    driverStatRTL.textContent = rtlCount.toString();
+  }
+
+  // admin subscription: all runs + drivers list
+  function subscribeAdmin() {
+    // all runs
+    adminRunsListener = runsRef.on("value", (snap) => {
+      const rows = snap.val() || {};
+      renderAdminRuns(rows);
+    });
+
+    // driver list
+    driversListListener = usersRef.orderByChild("role").equalTo("driver")
+      .on("value", (snap) => {
+        const usersObj = snap.val() || {};
+        renderDriverOptions(usersObj);
+      });
+  }
+
+  function renderDriverOptions(usersObj) {
+    adminDriverSelect.innerHTML = "";
+    const optPlaceholder = document.createElement("option");
+    optPlaceholder.value = "";
+    optPlaceholder.textContent = "Select a driver…";
+    adminDriverSelect.appendChild(optPlaceholder);
+
+    Object.keys(usersObj).forEach((uid) => {
+      const u = usersObj[uid];
+      const opt = document.createElement("option");
+      opt.value = uid;
+      opt.textContent = (u.displayName || "Unknown") + " – " + (u.email || uid);
+      adminDriverSelect.appendChild(opt);
+    });
+  }
+
+  function renderAdminRuns(rows) {
+    adminRunsBody.innerHTML = "";
+    const entries = Object.entries(rows); // [id, data]
+    let total = entries.length;
+    let rtlCount = 0;
+
+    entries.forEach(([id, r]) => {
+      if (r.rtl) rtlCount++;
+
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${r.driverName || ""}</td>
+        <td><input type="text" data-id="${id}" data-field="loadNumber" value="${r.loadNumber || ""}"></td>
+        <td><input type="number" data-id="${id}" data-field="wave" value="${r.wave || ""}"></td>
+        <td><input type="time" data-id="${id}" data-field="dueIn" value="${r.dueIn || ""}"></td>
+        <td><input type="time" data-id="${id}" data-field="readyTime" value="${r.readyTime || ""}"></td>
+        <td><input type="time" data-id="${id}" data-field="dueOut" value="${r.dueOut || ""}"></td>
+        <td>
+          <input type="checkbox" class="small-checkbox" data-id="${id}" data-field="rtl" ${r.rtl ? "checked" : ""}>
+        </td>
+        <td>
+          <button class="btn btn-danger" data-delete="${id}">Delete</button>
+        </td>
+      `;
+      adminRunsBody.appendChild(tr);
+    });
+
+    adminStatTotal.textContent = total.toString();
+    adminStatRTL.textContent = rtlCount.toString();
+  }
+
+  // admin create run
+  createRunBtn.addEventListener("click", async () => {
+    if (currentRole !== "admin") return;
+
+    const driverId = adminDriverSelect.value;
+    if (!driverId) {
+      alert("Please select a driver.");
+      return;
+    }
+
+    const driverOption = adminDriverSelect.options[adminDriverSelect.selectedIndex];
+    const driverName = driverOption.textContent.split(" – ")[0];
+
+    const loadNumber = adminLoadNumber.value.trim();
+    const wave = adminWave.value.trim();
+    const dueIn = adminDueIn.value;
+    const readyTime = adminReadyTime.value;
+    const dueOut = adminDueOut.value;
+    const rtl = adminRtl.checked;
+
+    const newRunRef = runsRef.push();
+    await newRunRef.set({
+      driverId,
+      driverName,
+      loadNumber,
+      wave,
+      dueIn,
+      readyTime,
+      dueOut,
+      rtl: !!rtl,
+      createdAt: Date.now()
+    });
+
+    adminLoadNumber.value = "";
+    adminWave.value = "";
+    adminDueIn.value = "";
+    adminReadyTime.value = "";
+    adminDueOut.value = "";
+    adminRtl.checked = false;
+  });
+
+  // admin inline edits + delete
+  adminRunsBody.addEventListener("input", (e) => {
+    const field = e.target.dataset.field;
+    const id = e.target.dataset.id;
+    if (!field || !id) return;
+    const value = e.target.type === "checkbox" ? e.target.checked : e.target.value;
+    runsRef.child(id).child(field).set(value);
+  });
+
+  adminRunsBody.addEventListener("click", (e) => {
+    const id = e.target.dataset.delete;
+    if (!id) return;
+    if (!confirm("Delete this run?")) return;
+    runsRef.child(id).remove();
+  });
+</script>
+</body>
+</html>
